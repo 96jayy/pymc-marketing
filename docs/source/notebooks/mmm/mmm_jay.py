@@ -127,3 +127,49 @@ def apply_adstock_saturation(df, columns, alphas, l_maxs, lams, normalize=True):
     df = apply_saturation(df, [f"{col}_adstock" for col in columns], lams)
     
     return df
+
+
+
+def plot_transformed_data(df, columns, date_column="date_week", suptitle="Media Costs Data - Transformed"):
+    """
+    여러 개의 열에 대한 원본 데이터, 애드스톡 변환 및 포화 변환된 데이터를 시각화하는 함수.
+    
+    인자:
+    df : pandas.DataFrame
+        시각화할 데이터를 포함한 데이터프레임.
+    columns : list of str
+        원본 데이터, 애드스톡 변환, 포화 변환된 열의 기본 이름 리스트 (예: ['x1', 'x2']).
+    date_column : str
+        x축에 사용할 날짜 열의 이름 (기본값: 'date_week').
+    suptitle : str
+        전체 플롯의 제목 (기본값: 'Media Costs Data - Transformed').
+        
+    반환:
+    None
+    """
+
+    # 열 개수에 따라 적절한 플롯의 행과 열 개수 설정
+    n_columns = len(columns)
+    fig, ax = plt.subplots(
+        nrows=3, ncols=n_columns, figsize=(16, 9), sharex=True, sharey=False, layout="constrained"
+    )
+
+    # 각 열에 대해 원본 데이터, 애드스톡 변환, 포화 변환 데이터를 플로팅
+    for i, col in enumerate(columns):
+        # 첫 번째 행: 원본 데이터
+        sns.lineplot(x=date_column, y=col, data=df, color=f"C{i}", ax=ax[0, i])
+        ax[0, i].set_title(f"{col} - Original")
+
+        # 두 번째 행: 애드스톡 변환 데이터
+        sns.lineplot(x=date_column, y=f"{col}_adstock", data=df, color=f"C{i}", ax=ax[1, i])
+        ax[1, i].set_title(f"{col} - Adstock Transformed")
+
+        # 세 번째 행: 애드스톡 + 포화 변환 데이터
+        sns.lineplot(x=date_column, y=f"{col}_adstock_saturated", data=df, color=f"C{i}", ax=ax[2, i])
+        ax[2, i].set_title(f"{col} - Adstock & Saturation Transformed")
+
+    # 전체 플롯 제목
+    fig.suptitle(suptitle, fontsize=16)
+
+    # 플롯 표시
+    plt.show()
