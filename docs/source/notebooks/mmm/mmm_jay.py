@@ -252,3 +252,38 @@ def plot_sales_attribution(df, beta_values, event_columns, feature_columns, inte
 
     # 그래프 출력
     plt.show()
+
+
+def calculate_contribution_shares(df, feature_columns, beta_values):
+    """
+    각 특징 열에 대한 기여도 비율을 계산하는 함수.
+    
+    인자:
+    df : pandas.DataFrame
+        기여도 계산에 사용될 데이터를 포함한 데이터프레임.
+    feature_columns : list of str
+        각 특징 열 이름 리스트 (예: ['x1', 'x2', ...]).
+    beta_values : dict
+        각 특징 열에 대한 기여도 배수 값을 포함한 딕셔너리. 예: {'x1': 3.0, 'x2': 2.0}.
+        
+    반환:
+    contribution_shares : dict
+        각 특징 열에 대한 기여도 비율을 포함한 딕셔너리.
+    """
+
+    # 총 기여도 계산 (가중 합)
+    total_contribution = sum(
+        (beta_values[feature] * df[f"{feature}_adstock_saturated"]).sum() for feature in feature_columns
+    )
+
+    # 각 특징 열의 기여도 비율 계산
+    contribution_shares = {}
+    for feature in feature_columns:
+        contribution = (beta_values[feature] * df[f"{feature}_adstock_saturated"]).sum()
+        contribution_shares[feature] = contribution / total_contribution
+
+    # 기여도 비율 출력
+    for feature, share in contribution_shares.items():
+        print(f"Contribution Share of {feature}: {share:.2f}")
+    
+    return contribution_shares
