@@ -179,6 +179,6 @@ def plot_transformed_data(df, columns, date_column="date_week", suptitle="Media 
 
 def plot_target(df, x, target):
     fig, ax = plt.subplots()
-    sns.lineplot(x=x, y=y, color="black", data=df, ax=ax)
+    sns.lineplot(x=x, y=target, color="black", data=df, ax=ax)
     ax.set(title="Sales (Target Variable)", xlabel="date", ylabel="y (thousands)")
     plt.show()
