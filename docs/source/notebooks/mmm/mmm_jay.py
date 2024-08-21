@@ -287,3 +287,56 @@ def calculate_contribution_shares(df, feature_columns, beta_values):
         print(f"Contribution Share of {feature}: {share:.2f}")
     
     return contribution_shares
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def plot_contributions(df, feature_columns, betas, amplitude=1, x_label="x"):
+    """
+    여러 열에 대해 기여도를 플로팅하는 함수.
+    
+    인자:
+    df : pandas.DataFrame
+        기여도 계산에 사용될 데이터를 포함한 데이터프레임.
+    feature_columns : list of str
+        기여도를 시각화할 열 이름 리스트 (예: ['x1', 'x2', ...]).
+    betas : list of float
+        각 열에 대한 베타 값 리스트. feature_columns와 동일한 길이여야 함.
+    amplitude : float
+        기여도를 계산할 때 사용하는 배수. 기본값은 1.
+    x_label : str
+        x축의 레이블. 기본값은 'x'.
+
+    반환:
+    None
+    """
+    
+    n_features = len(feature_columns)
+    
+    # 서브플롯 생성
+    fig, ax = plt.subplots(
+        nrows=n_features, ncols=1, figsize=(12, 4 * n_features), sharex=True, sharey=False, layout="constrained"
+    )
+    
+    # ax가 하나일 때, 리스트로 처리
+    if n_features == 1:
+        ax = [ax]
+    
+    # 각 열에 대해 기여도 플로팅
+    for i, feature in enumerate(feature_columns):
+        sns.scatterplot(
+            x=df[feature],
+            y=amplitude * betas[i] * df[f"{feature}_adstock_saturated"],
+            color=f"C{i}",
+            ax=ax[i],
+        )
+        
+        ax[i].set(
+            title=f"${feature}$ contribution",
+            ylabel=f"$\\beta_{i + 1} \\cdot {feature}$ adstocked & saturated",
+            xlabel=x_label,
+        )
+    
+    # 플롯 표시
+    plt.show()
