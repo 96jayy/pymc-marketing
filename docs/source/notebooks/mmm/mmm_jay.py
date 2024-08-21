@@ -182,3 +182,73 @@ def plot_target(df, x, target):
     sns.lineplot(x=x, y=target, color="black", data=df, ax=ax)
     ax.set(title="Sales (Target Variable)", xlabel="date", ylabel="y (thousands)")
     plt.show()
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def plot_sales_attribution(df, beta_values, event_columns, feature_columns, intercept_col='intercept'):
+    """
+    기여도(Attribution) 데이터를 기반으로 막대 그래프를 생성하는 함수.
+    
+    인자:
+    df : pandas.DataFrame
+        기여도 계산에 사용될 데이터를 포함한 데이터프레임.
+    beta_values : dict
+        feature_columns에 대한 기여도 배수를 포함하는 딕셔너리. 예: {"x1": 3.0, "x2": 2.0}.
+    event_columns : list of str
+        이벤트 데이터를 포함한 열의 이름 리스트.
+    feature_columns : list of str
+        애드스톡 및 포화 변환 데이터를 포함한 열의 이름 리스트.
+    intercept_col : str
+        절편 데이터를 포함한 열의 이름 (기본값: 'intercept').
+
+    반환:
+    None
+    """
+
+    # 각 기여도의 합 계산
+    contributions = [
+        df[intercept_col].sum(),  # 절편(intercept) 기여도
+    ]
+
+    # feature_columns의 기여도 계산
+    for feature, beta in beta_values.items():
+        contributions.append((beta * df[f"{feature}_adstock_saturated"]).sum())
+
+    # 이벤트 기여도 계산
+    for event_col in event_columns:
+        contributions.append(df[event_col].sum())
+
+    # 트렌드와 계절성 기여도 추가
+    contributions.append(df["trend"].sum())
+    contributions.append(df["seasonality"].sum())
+
+    # 막대 그래프 생성
+    fig, ax = plt.subplots()
+    
+    # 막대 그래프 그리기
+    labels = [intercept_col] + feature_columns + event_columns + ["trend", "seasonality"]
+    
+    ax.bar(
+        labels,
+        contributions,
+        color=["C0" if x >= 0 else "C3" for x in contributions],
+        alpha=0.8,
+    )
+    
+    # 막대에 레이블 추가
+    ax.bar_label(
+        ax.containers[0],
+        fmt="{:,.2f}",
+        label_type="edge",
+        padding=2,
+        fontsize=15,
+        fontweight="bold",
+    )
+    
+    # 제목과 축 레이블 설정
+    ax.set(title="Sales Attribution", ylabel="Sales (thousands)")
+
+    # 그래프 출력
+    plt.show()
